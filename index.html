@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Construction Cycle Time Estimator</title>
+  <style>
+    body { font-family: Arial; margin: 30px; }
+    h2 { margin-bottom: 5px; }
+    .step-block { margin-bottom: 25px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+    input[type="number"] { width: 100px; margin-right: 10px; padding: 5px; }
+    button { padding: 6px 12px; margin-top: 5px; }
+    .result { margin-top: 30px; font-size: 18px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h2>Construction Process Cycle Time Estimator</h2>
+  <p>Enter time in hours for each activity (you can add multiple entries to calculate average)</p>
+
+  <div id="steps"></div>
+
+  <button onclick="calculateOverall()">Calculate Overall Cycle Time</button>
+
+  <div class="result" id="output"></div>
+
+  <script>
+    const steps = [
+      "Cage lowering",
+      "Bulkhead fixing",
+      "Bottom profile",
+      "Inner shutter fixing",
+      "Top profiling",
+      "Concreting"
+    ];
+
+    const stepContainer = document.getElementById("steps");
+
+    // Generate step input sections
+    steps.forEach(step => {
+      const div = document.createElement("div");
+      div.className = "step-block";
+      div.innerHTML = `
+        <h3>${step}</h3>
+        <div class="entries" data-step="${step}"></div>
+        <button onclick="addEntry(this)">Add Time Entry</button>
+        <br><label>Wait Time After This Step (hrs): <input type="number" step="0.01" class="waitTime" /></label>
+      `;
+      stepContainer.appendChild(div);
+    });
+
+    function addEntry(btn) {
+      const container = btn.previousElementSibling;
+      const input = document.createElement("input");
+      input.type = "number";
+      input.step = "0.01";
+      input.placeholder = "Time (hrs)";
+      input.className = "timeEntry";
+      container.appendChild(input);
+    }
+
+    function calculateOverall() {
+      const stepBlocks = document.querySelectorAll(".step-block");
+      let output = "";
+      let overallTime = 0;
+
+      stepBlocks.forEach(block => {
+        const entries = block.querySelectorAll(".timeEntry");
+        const wait = parseFloat(block.querySelector(".waitTime").value) || 0;
+        let sum = 0;
+        let count = 0;
+
+        entries.forEach(input => {
+          const val = parseFloat(input.value);
+          if (!isNaN(val)) {
+            sum += val;
+            count++;
+          }
+        });
+
+        const avg = count > 0 ? sum / count : 0;
+        const stepName = block.querySelector("h3").innerText;
+        overallTime += avg + wait;
+
+        output += <p>${stepName}: Avg Time = ${avg.toFixed(2)} hrs | Wait = ${wait.toFixed(2)} hrs</p>;
+      });
+
+      output += <hr><p><strong>Estimated Overall Cycle Time: ${overallTime.toFixed(2)} hours</strong></p>;
+      document.getElementById("output").innerHTML = output;
+    }
+  </script>
+
+</body>
+</html>
